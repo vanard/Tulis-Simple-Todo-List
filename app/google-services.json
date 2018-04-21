@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "239207423254",
+    "firebase_url": "https://tulis-9b6a8.firebaseio.com",
+    "project_id": "tulis-9b6a8",
+    "storage_bucket": "tulis-9b6a8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239207423254:android:7db68f4ea786ffff",
+        "android_client_info": {
+          "package_name": "com.vanard.tulis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "239207423254-ej1o5cv8rvl1j4r850upcmkc488o3q3g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vanard.tulis",
+            "certificate_hash": "a5bcb7e614bfd4516fa534a93a8d7e3735e12a25"
+          }
+        },
+        {
+          "client_id": "239207423254-k8ejh3bvsdg8b7gdtcsasg91aqpamp9i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt7hXdHsNwr76yD37yhOUsVsaUqFKzeO0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "239207423254-k8ejh3bvsdg8b7gdtcsasg91aqpamp9i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

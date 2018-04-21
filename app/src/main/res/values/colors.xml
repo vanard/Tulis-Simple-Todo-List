@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#fafafa</color>
+    <color name="colorPrimaryDark">#263238</color>
+    <color name="colorAccent">#03a9f4</color>
+
+    <color name="blueBtn">#0069c0</color>
+    <color name="whiteGrey">#fafafa</color>
+    <color name="cardOrange">#FF9800</color>
+    <color name="transparent">#000069c0</color>
+</resources>
