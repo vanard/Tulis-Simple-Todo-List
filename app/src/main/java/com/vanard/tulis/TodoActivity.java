@@ -177,7 +177,7 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                             db.document("Category/" + catDocu + "/Todo/" + docu).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    Toast.makeText(TodoActivity.this, "Waktunya sudah lewat", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(TodoActivity.this, "Todo sudah lewat", Toast.LENGTH_LONG).show();
                                 }
                             });
                         }

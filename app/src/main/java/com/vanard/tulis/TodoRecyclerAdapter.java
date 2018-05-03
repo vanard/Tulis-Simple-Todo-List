@@ -3,7 +3,9 @@ package com.vanard.tulis;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +17,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapter.ViewHolder> {
@@ -46,7 +49,7 @@ public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapte
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         final TodoLayout todoLayout = todoLayoutList.get(position);
         holder.setIsRecyclable(false);
 
@@ -79,6 +82,33 @@ public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapte
 
         String tDesc = todoLayout.getDescription();
         holder.todoDesc.setText(tDesc);
+
+        holder.viewForeground.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog todoDialog;
+                AlertDialog.Builder todoBuilder = new AlertDialog.Builder(context);
+                View view = LayoutInflater.from(context).inflate(R.layout.todo_info_layout, null);
+
+                TextView tvName = view.findViewById(R.id.tv_todo_name);
+                TextView tvDesc = view.findViewById(R.id.tv_todo_desc);
+                TextView tvDate = view.findViewById(R.id.tv_todo_deadline);
+
+
+                String time = todoLayout.getDeadline();
+                tvDate.setText(time);
+
+                String name = todoLayout.getTodo_name();
+                String desc = todoLayout.getDescription();
+
+                tvName.setText(name);
+                tvDesc.setText(desc);
+
+                todoBuilder.setView(view);
+                todoDialog = todoBuilder.create();
+                todoDialog.show();
+            }
+        });
     }
 
     @Override

@@ -219,7 +219,7 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
                             public void onSuccess(Void aVoid) {
                                 startActivity(new Intent(AddTodoActivity.this, TodoActivity.class));
                                 finish();
-                                
+
                                 dialog.dismiss();
                             }
                         });
