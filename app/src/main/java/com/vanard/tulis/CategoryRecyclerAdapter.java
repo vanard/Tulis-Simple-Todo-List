@@ -2,12 +2,12 @@ package com.vanard.tulis;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,24 +16,20 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Date;
 import java.util.List;
 
 import dmax.dialog.SpotsDialog;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryRecyclerAdapter.ViewHolder> {
     private static final String TAG = "CategoryRecyclerAdapter";
+    public static final String PREF_NAME = "ToDoFile";
 
     private SpotsDialog dialog;
 
@@ -44,8 +40,9 @@ public class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryRecycl
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
-    public CategoryRecyclerAdapter(List<CategoryLayout> categoryList) {
+    public CategoryRecyclerAdapter(List<CategoryLayout> categoryList, Context context) {
         this.categoryList = categoryList;
+        this.context = context;
     }
 
     @NonNull
@@ -65,14 +62,16 @@ public class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryRecycl
         final CategoryLayout categoryLayout = categoryList.get(position);
         holder.setIsRecyclable(false);
 
-        final String user_id = categoryLayout.getUser_id();
-
         String titleData = categoryLayout.getCategory_title();
         holder.setCategoryTitle(titleData);
 
-        long milliseconds = categoryLayout.getTimestamp().getTime();
-        String dateString = DateFormat.format("MMM dd, yyyy", new Date(milliseconds)).toString();
-        holder.setCategoryDate(dateString);
+        try{
+            long milliseconds = categoryLayout.getTimestamp().getTime();
+            String dateString = DateFormat.format("MMM dd, yyyy", new Date(milliseconds)).toString();
+            holder.setCategoryDate(dateString);
+        }catch (Exception e){
+            Toast.makeText(context, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
 
         holder.category_menu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,13 +85,16 @@ public class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryRecycl
                             case R.id.category_delete:
                                 dialog.show();
                                 final String documentId = categoryLayout.getDocumentId();
-                                Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
                                 Log.d(TAG, "onMenuItemClick: Deleted : " + documentId);
                                 db.document("Category/" + documentId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         categoryList.remove(position);
+                                        notifyItemRemoved(position);
+                                        notifyItemChanged(position);
+                                        notifyDataSetChanged();
                                         dialog.dismiss();
+                                        Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                                 return true;
@@ -115,8 +117,15 @@ public class CategoryRecyclerAdapter extends RecyclerView.Adapter<CategoryRecycl
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(context, TodoActivity.class);
-                i.putExtra("title", categoryLayout.getCategory_title());
+//                i.putExtra("title", categoryLayout.getCategory_title());
+//                i.putExtra("category", categoryLayout.getDocumentId());
+
+                SharedPreferences.Editor clDoc = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit();
+                clDoc.putString("category", categoryLayout.getDocumentId());
+                clDoc.putString("title", categoryLayout.getCategory_title());
+                clDoc.apply();
                 context.startActivity(i);
+                Log.d(TAG, "onClick: " + categoryLayout.getDocumentId());
             }
         });
 

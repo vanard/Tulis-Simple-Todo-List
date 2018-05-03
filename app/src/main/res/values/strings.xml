@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Tulis</string>
+    <string name="delete">DELETE</string>
+    <string-array name="priority">
+        <item>High</item>
+        <item>Medium</item>
+        <item>Low</item>
+    </string-array>
+    
 </resources>

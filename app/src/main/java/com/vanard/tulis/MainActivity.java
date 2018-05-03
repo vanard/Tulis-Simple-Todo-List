@@ -3,6 +3,8 @@ package com.vanard.tulis;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,95 +23,111 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import dmax.dialog.SpotsDialog;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private Toolbar mainToolbar;
+    private Toolbar todoToolbar;
+
     private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
-    private Query query;
 
-    private String current_user_id;
+    private ViewPager mMainPager;
+    private TextView mCategoryLabel;
+    private TextView mTodoLabel;
+    private MainPagerAdapter mPagerAdapter;
 
-    private FloatingActionButton fabAdd;
-    private RecyclerView rcView;
-
-    private CategoryRecyclerAdapter adapter;
-    private ArrayList<CategoryLayout> categoryList;
+    private String loc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        todoToolbar = findViewById(R.id.add_todo_toolbar);
+        setSupportActionBar(todoToolbar);
+        getSupportActionBar().setTitle("Tulis");
+
         mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        Intent i = getIntent();
 
-        mainToolbar = findViewById(R.id.todo_toolbar);
-        setSupportActionBar(mainToolbar);
-        getSupportActionBar().setTitle("Tulis : Simple Todo List");
+        mCategoryLabel = findViewById(R.id.label_category);
+        mTodoLabel = findViewById(R.id.label_todo);
 
-        categoryList = new ArrayList<>();
-        rcView = findViewById(R.id.rc_view);
-        fabAdd = findViewById(R.id.fab_category_add);
+        mMainPager = findViewById(R.id.main_pager);
+        mMainPager.setOffscreenPageLimit(1);
+        mPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
+        mMainPager.setAdapter(mPagerAdapter);
 
-        rcView.setHasFixedSize(true);
-        rcView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null){
-            Log.d(TAG, "onCreate: user ada");
-            adapter = new CategoryRecyclerAdapter(categoryList);
-            rcView.setAdapter(adapter);
-        }
-
-        fabAdd.setOnClickListener(new View.OnClickListener() {
+        mCategoryLabel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AddCategoryActivity.class));
+                mMainPager.setCurrentItem(0);
             }
         });
+
+        mTodoLabel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMainPager.setCurrentItem(1);
+            }
+        });
+
+        mMainPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                changeTabs(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        if (i.hasExtra("from")){
+            loc = i.getStringExtra("from");
+            if (loc.equals("fragment")){
+                mMainPager.setCurrentItem(1);
+            }
+        }
     }
 
-    private void initData() {
-        categoryList.clear();
-        Log.d(TAG, "initData: Load data");
-        current_user_id = mAuth.getCurrentUser().getUid();
+    private void changeTabs(int position) {
+        if (position == 0){
+            mCategoryLabel.setTextColor(getColor(R.color.whiteGrey));
+            mCategoryLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
+            mCategoryLabel.setTextSize(18);
 
-        query = db.collection("Category").whereEqualTo("user_id", current_user_id).orderBy("timestamp", Query.Direction.DESCENDING);
-        query.addSnapshotListener(MainActivity.this, new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                    for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
-                        if (doc.getType() == DocumentChange.Type.ADDED) {
-                            CategoryLayout categoryLayout = doc.getDocument().toObject(CategoryLayout.class);
+            mTodoLabel.setTextColor(getColor(R.color.holo_blue_dark));
+            mTodoLabel.setBackgroundColor(getColor(R.color.whiteGrey));
+            mTodoLabel.setTextSize(16);
+        }
+        if (position == 1){
+            mTodoLabel.setTextColor(getColor(R.color.whiteGrey));
+            mTodoLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
+            mTodoLabel.setTextSize(18);
 
-                            categoryList.add(categoryLayout);
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-            }
-        });
-    }
-
-    private void deleteItem(int order){
-        db.collection("Category")
-                .document(categoryList.get(order).getDocumentId())
-        .delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(MainActivity.this, "Category Deleted", Toast.LENGTH_SHORT).show();
-                initData();
-            }
-        });
+            mCategoryLabel.setTextColor(getColor(R.color.holo_blue_dark));
+            mCategoryLabel.setBackgroundColor(getColor(R.color.whiteGrey));
+            mCategoryLabel.setTextSize(16);
+        }
     }
 
     @Override
@@ -116,11 +135,8 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null){
+        if (user == null) {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
-        }else{
-            categoryList.clear();
-            initData();
         }
     }
 
@@ -142,29 +158,5 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return false;
         }
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (item.getTitle().equals("Edit")){
-            CategoryLayout cl = new CategoryLayout();
-            String title = cl.getCategory_title();
-
-            Intent i = new Intent(MainActivity.this, AddCategoryActivity.class);
-            i.putExtra("name", title);
-            startActivity(i);
-        }else if(item.getTitle().equals("Delete")){
-            deleteItem(item.getOrder());
-        }
-        return super.onContextItemSelected(item);
-    }
-
-    @Override
-    public void setTitle(int titleId) {
-        super.setTitle(titleId);
-
-        View v = getActionBar().getCustomView();
-        TextView tv = v.findViewById(R.id.txt_head);
-        tv.setText(titleId);
     }
 }
