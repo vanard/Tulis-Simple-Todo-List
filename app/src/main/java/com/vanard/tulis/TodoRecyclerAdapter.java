@@ -20,16 +20,18 @@ import java.util.List;
 public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapter.ViewHolder> {
 
     private static final String TAG = "TodoRecyclerAdapter";
-    private static final long milDay = 86400000;
+//    private static final long milDay = 86400000;
 
     FirebaseFirestore db;
 
     private List<TodoLayout> todoLayoutList;
     private Context context;
+    public int id;
 
-    public TodoRecyclerAdapter(List<TodoLayout> todoLayoutList, Context context) {
+    public TodoRecyclerAdapter(List<TodoLayout> todoLayoutList, Context context, int id) {
         this.todoLayoutList = todoLayoutList;
         this.context = context;
+        this.id = id;
     }
 
     @NonNull
@@ -40,7 +42,7 @@ public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapte
 
         db = FirebaseFirestore.getInstance();
 
-        return new ViewHolder(v);
+        return new ViewHolder(v, this.id);
     }
 
     @Override
@@ -51,26 +53,26 @@ public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapte
         Calendar c = Calendar.getInstance();
 
         long deadline = todoLayout.getDate().getTime();
-        long deadtime = todoLayout.getDeadtime();
-
-        if (c.get(Calendar.DATE) == deadtime && (c.getTimeInMillis() - deadline) <= 0 && (c.getTimeInMillis() - deadline) > (-1*milDay)){
-            Log.d(TAG, "onBindViewHolder: Today");
-            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis()-deadline));
-        }
-        if (c.get(Calendar.DATE) - deadtime == -1 && (c.getTimeInMillis() - deadline) <= (-1*milDay)  && (c.getTimeInMillis() - deadline) >= (-2*milDay)){
-            Log.d(TAG, "onBindViewHolder: Tomorrow");
-            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis()-deadline));
-        }
-        if (c.get(Calendar.DATE) == deadtime && (c.getTimeInMillis() - deadline) <= (-1*milDay*27)) {
-            Log.d(TAG, "onBindViewHolder: bulan depan");
-            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis() - deadline));
-        }
-        if (c.get(Calendar.DATE) - deadtime < -1 && (c.getTimeInMillis() - deadline) <= (-1*milDay)){
-            Log.d(TAG, "onBindViewHolder: Another day");
-        }
-        if (c.getTimeInMillis() - deadline > 0){
-            Log.d(TAG, "onBindViewHolder: Terlewat");
-        }
+//        long deadtime = todoLayout.getDeadtime();
+//
+//        if (c.get(Calendar.DATE) == deadtime && (c.getTimeInMillis() - deadline) <= 0 && (c.getTimeInMillis() - deadline) > (-1*milDay)){
+//            Log.d(TAG, "onBindViewHolder: Today");
+//            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis()-deadline));
+//        }
+//        if (c.get(Calendar.DATE) - deadtime == -1 && (c.getTimeInMillis() - deadline) >= (-2*milDay)){
+//            Log.d(TAG, "onBindViewHolder: Tomorrow");
+//            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis()-deadline));
+//        }
+//        if (c.get(Calendar.DATE) == deadtime && (c.getTimeInMillis() - deadline) <= (-1*milDay*27)) {
+//            Log.d(TAG, "onBindViewHolder: bulan depan");
+//            Log.d(TAG, "onBindViewHolder: " + (c.getTimeInMillis() - deadline));
+//        }
+//        if (c.get(Calendar.DATE) - deadtime < -1 && (c.getTimeInMillis() - deadline) <= (-1*milDay)){
+//            Log.d(TAG, "onBindViewHolder: Another day");
+//        }
+//        if (c.getTimeInMillis() - deadline > 0){
+//
+//        }
 
         String tName = todoLayout.getTodo_name();
         holder.todoName.setText(tName);
@@ -89,9 +91,12 @@ public class TodoRecyclerAdapter extends RecyclerView.Adapter<TodoRecyclerAdapte
         private TextView todoName;
         private TextView todoDesc;
         public ConstraintLayout viewBackground, viewForeground, viewDone;
+        public int id;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(View itemView, int id) {
             super(itemView);
+
+            this.id = id;
 
             todoName = itemView.findViewById(R.id.todo_name);
             todoDesc = itemView.findViewById(R.id.todo_description);

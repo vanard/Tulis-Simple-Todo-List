@@ -219,7 +219,7 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
                             public void onSuccess(Void aVoid) {
                                 startActivity(new Intent(AddTodoActivity.this, TodoActivity.class));
                                 finish();
-                                toast("Todo was added");
+                                
                                 dialog.dismiss();
                             }
                         });
@@ -232,7 +232,7 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
                                 i.putExtra("from", "fragment");
                                 startActivity(i);
                                 finish();
-                                toast("Todo was added");
+
                                 dialog.dismiss();
                             }
                         });
