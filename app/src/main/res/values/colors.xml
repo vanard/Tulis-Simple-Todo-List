@@ -16,4 +16,8 @@
     <color name="holo_blue_bright">#ff00ddff</color>
     <color name="holo_blue_light">#ff33b5e5</color>
     <color name="holo_blue_dark">#ff0099cc</color>
+
+    <color name="colorTransparentWhite">#cccccc</color>
+    <color name="colorWhite">#fff</color>
+    <color name="transparentWhite">#00ffffff</color>
 </resources>

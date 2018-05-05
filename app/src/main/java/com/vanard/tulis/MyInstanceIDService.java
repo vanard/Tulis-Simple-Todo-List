@@ -1,7 +1,19 @@
 package com.vanard.tulis;
 
-import com.google.firebase.messaging.FirebaseMessagingService;
+import android.util.Log;
 
-public class MyInstanceIDService extends FirebaseMessagingService {
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.FirebaseInstanceIdService;
 
+public class MyInstanceIDService extends FirebaseInstanceIdService {
+    private static final String TAG = "MyInstanceIDService";
+
+    @Override
+    public void onTokenRefresh() {
+        // Get updated InstanceID token.
+        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        Log.d(TAG, "Refreshed token: " + refreshedToken);
+
+
+    }
 }

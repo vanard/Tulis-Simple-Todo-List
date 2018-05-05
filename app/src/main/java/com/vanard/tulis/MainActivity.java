@@ -156,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
                 finish();
                 return true;
+            case R.id.action_sync_btn:
+                return true;
             default:
                 return false;
         }
