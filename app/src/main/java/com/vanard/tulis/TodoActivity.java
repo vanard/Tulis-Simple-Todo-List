@@ -51,7 +51,8 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
     private RecyclerView rcv_today;
     private RecyclerView rcv_tomorrow;
     private RecyclerView rcv_other;
-    private TextView today, tomorrow, aday;
+    private RecyclerView rcv_ex;
+    private TextView today, tomorrow, aday, tvEx;
 
     private String title_category;
     private String dId;
@@ -60,9 +61,11 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
     private ArrayList<TodoLayout> todoLayoutList;
     private ArrayList<TodoLayout> todoTomorrow;
     private ArrayList<TodoLayout> todoOtherDay;
+    private ArrayList<TodoLayout> todoEx;
     private TodoRecyclerAdapter adapter;
     private TodoRecyclerAdapter adapter1;
     private TodoRecyclerAdapter adapter2;
+    private TodoRecyclerAdapter adapter3;
 
     public String catDId;
     public String catTit;
@@ -91,6 +94,7 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
         todoLayoutList = new ArrayList<>();
         todoTomorrow = new ArrayList<>();
         todoOtherDay = new ArrayList<>();
+        todoEx = new ArrayList<>();
 
         settingData();
 
@@ -138,13 +142,11 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                 todoLayoutList.clear();
                 todoTomorrow.clear();
                 todoOtherDay.clear();
+                todoEx.clear();
 
                 for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
                     if (doc.getType() == DocumentChange.Type.ADDED) {
                         TodoLayout todoLayout = doc.getDocument().toObject(TodoLayout.class);
-
-                        String docu = todoLayout.getDocumentId();
-                        String catDocu = todoLayout.getCategory_documentId();
                         
                         Calendar c = Calendar.getInstance();
 
@@ -174,14 +176,11 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                             adapter2.notifyDataSetChanged();
                         }if (c.getTimeInMillis() - deadline > 0) {
                             Log.d(TAG, "onEvent: terlewat");
-                            db.document("Category/" + catDocu + "/Todo/" + docu).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(TodoActivity.this, "Todo sudah lewat", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                            todoEx.add(todoLayout);
+                            if (todoEx.size() > 0)
+                                tvEx.setVisibility(View.VISIBLE);
+                            adapter3.notifyDataSetChanged();
                         }
-//                        todoLayoutList.add(todoLayout);
                     }
                 }
             }
@@ -216,8 +215,10 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                 adapter.removeItem(viewHolder.getAdapterPosition());
                 adapter.notifyItemRemoved(position);
                 adapter.notifyDataSetChanged();
+                if (todoLayoutList.size() <= 0)
+                    today.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: today hapus");
+
             }
             if (s == 2){
                 String doc = todoTomorrow.get(position).getDocumentId();
@@ -230,8 +231,10 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                 adapter1.removeItem(viewHolder.getAdapterPosition());
                 adapter1.notifyItemRemoved(position);
                 adapter1.notifyDataSetChanged();
+                if (todoTomorrow.size() <= 0)
+                    tomorrow.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: tomorrow hapus");
+
             }if (s == 3){
                 String doc = todoOtherDay.get(position).getDocumentId();
                 String catDoc = todoOtherDay.get(position).getCategory_documentId();
@@ -243,8 +246,24 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
                 adapter2.removeItem(viewHolder.getAdapterPosition());
                 adapter2.notifyItemRemoved(position);
                 adapter2.notifyDataSetChanged();
+                if (todoOtherDay.size() <= 0)
+                    aday.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: other day hapus");
+
+            }if (s == 0){
+                String doc = todoEx.get(position).getDocumentId();
+                String catDoc = todoEx.get(position).getCategory_documentId();
+                db.document("Category/" + catDoc + "/Todo/"+ doc).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                    }
+                });
+                adapter3.removeItem(viewHolder.getAdapterPosition());
+                adapter3.notifyItemRemoved(position);
+                adapter3.notifyDataSetChanged();
+                if (todoEx.size() <= 0)
+                    tvEx.setVisibility(View.GONE);
+                initData();
             }
         }
     }
@@ -253,10 +272,14 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
         rcv_today = findViewById(R.id.todo_rcv_today);
         rcv_tomorrow = findViewById(R.id.todo_rcv_tomorrow);
         rcv_other = findViewById(R.id.todo_rcv_other);
+        rcv_ex = findViewById(R.id.todo_rcv_ex);
+
         fabAddTodo = findViewById(R.id.fab_todo_add);
+
         today = findViewById(R.id.todo_tv_today);
         tomorrow = findViewById(R.id.todo_tv_tomorrow);
         aday = findViewById(R.id.todo_tv_other_day);
+        tvEx = findViewById(R.id.todo_tv_ex);
 
         rcv_today.setHasFixedSize(true);
         rcv_today.setLayoutManager(new LinearLayoutManager(this));
@@ -290,5 +313,16 @@ public class TodoActivity extends AppCompatActivity implements RecyclerItemTouch
 
         ItemTouchHelper.SimpleCallback itemOther = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
         new ItemTouchHelper(itemOther).attachToRecyclerView(rcv_other);
+
+        rcv_ex.setHasFixedSize(true);
+        rcv_ex.setLayoutManager(new LinearLayoutManager(this));
+        rcv_ex.setItemAnimator(new DefaultItemAnimator());
+        rcv_ex.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+
+        adapter3 = new TodoRecyclerAdapter(todoEx, this, 0);
+        rcv_ex.setAdapter(adapter3);
+
+        ItemTouchHelper.SimpleCallback itemEx = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        new ItemTouchHelper(itemEx).attachToRecyclerView(rcv_ex);
     }
 }

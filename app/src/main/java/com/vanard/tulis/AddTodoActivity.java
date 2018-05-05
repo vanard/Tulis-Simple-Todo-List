@@ -3,6 +3,8 @@ package com.vanard.tulis;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
@@ -57,6 +59,7 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
     private String times;
 
     private Boolean isUpdate = false;
+    private Boolean isExpired = false;
     FloatingActionButton fab;
     private Calendar c;
     private Calendar cc;
@@ -87,7 +90,6 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
         if (restore != null) {
             catTit = pref.getString("title", "Todo");
             catDId = restore;
-            Log.d(TAG, "onCreate: " + catDId);
         }
 
         Intent i = getIntent();
@@ -145,11 +147,39 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
                 c.set(Calendar.MONTH, month);
                 c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
+                long isExp = now - c.getTimeInMillis();
+
+                if (isExp > 0){
+                    if (Build.VERSION.SDK_INT >= 23){
+                        fab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.description)));
+                        fab.setEnabled(false);
+                        isExpired = true;
+
+                        toast("Date is expired");
+                    }
+                    if (Build.VERSION.SDK_INT < 23){
+                        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.description)));
+                        fab.setEnabled(false);
+                        isExpired = true;
+
+                        toast("Date is expired");
+                    }
+                }else{
+                    if (Build.VERSION.SDK_INT >= 23){
+                        fab.setBackgroundTintList(ColorStateList.valueOf(getColor(R.color.blueBtn)));
+                        fab.setEnabled(true);
+                        isExpired = false;
+                    }
+                    if (Build.VERSION.SDK_INT < 23){
+                        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.blueBtn)));
+                        fab.setEnabled(true);
+                        isExpired = false;
+                    }
+                }
+
                 cc.set(Calendar.YEAR, year);
                 cc.set(Calendar.MONTH, month);
                 cc.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                Log.d(TAG, "onSelectedDayChange: ");
             }
         });
 
@@ -157,32 +187,28 @@ public class AddTodoActivity extends AppCompatActivity implements TimePickerDial
             @Override
             public void onClick(View v) {
 
-                miliseconds = c.getTimeInMillis();
-                days = cc.get(Calendar.DATE);
+                if (!isExpired){
 
-                Log.d(TAG, "onClick: " + days);
-                Log.d(TAG, "onClick: " + z);
+                    miliseconds = c.getTimeInMillis();
+                    days = cc.get(Calendar.DATE);
 
-                String date = DateFormat.format("MMM dd, yyyy", new Date(miliseconds)).toString();
-                dated = c.getTime();
+                    String date = DateFormat.format("MMM dd, yyyy", new Date(miliseconds)).toString();
+                    dated = c.getTime();
 
-                todoName = etName.getText().toString();
-                description = etDesc.getText().toString();
+                    todoName = etName.getText().toString();
+                    description = etDesc.getText().toString();
 
+                    current_user_id = mAuth.getCurrentUser().getUid();
 
-                current_user_id = mAuth.getCurrentUser().getUid();
+                    if (!isUpdate){
+                        dialog.show();
+                        Log.d(TAG, "onClick: masukin data");
+                        setData(todoName, description, priority, date, miliseconds, days, current_user_id);
+                    }else{
+                        dialog.show();
+                        Log.d(TAG, "onClick: update data");
 
-                Log.d(TAG, "onTimeSet: " + (now - miliseconds));
-                Log.d(TAG, "onClick: " + date);
-
-                if (!isUpdate){
-                    dialog.show();
-                    Log.d(TAG, "onClick: masukin data");
-                    setData(todoName, description, priority, date, miliseconds, days, current_user_id);
-                }else{
-                    dialog.show();
-                    Log.d(TAG, "onClick: update data");
-
+                    }
                 }
             }
         });

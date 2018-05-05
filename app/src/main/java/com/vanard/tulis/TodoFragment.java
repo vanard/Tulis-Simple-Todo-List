@@ -51,15 +51,18 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
     private ArrayList<TodoLayout> todoLayoutList;
     private ArrayList<TodoLayout> todoTomorrow;
     private ArrayList<TodoLayout> todoOtherDay;
+    private ArrayList<TodoLayout> todoEx;
     private TodoRecyclerAdapter adapter;
     private TodoRecyclerAdapter adapter1;
     private TodoRecyclerAdapter adapter2;
+    private TodoRecyclerAdapter adapter3;
 
     private FloatingActionButton fabAddTodo;
     private RecyclerView rcv_today;
     private RecyclerView rcv_tomorrow;
     private RecyclerView rcv_other;
-    private TextView today, tomorrow, aday;
+    private RecyclerView rcv_ex;
+    private TextView today, tomorrow, aday, tvEx;
 
     public TodoFragment() {
         // Required empty public constructor
@@ -78,6 +81,7 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
         todoLayoutList = new ArrayList<>();
         todoTomorrow = new ArrayList<>();
         todoOtherDay = new ArrayList<>();
+        todoEx = new ArrayList<>();
 
         settingData(container);
 
@@ -106,12 +110,11 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
                 todoLayoutList.clear();
                 todoTomorrow.clear();
                 todoOtherDay.clear();
+                todoEx.clear();
 
                 for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
                     if (doc.getType() == DocumentChange.Type.ADDED) {
                         TodoLayout todoLayout = doc.getDocument().toObject(TodoLayout.class);
-
-                        String docu = todoLayout.getDocumentId();
 
                         Calendar c = Calendar.getInstance();
 
@@ -139,14 +142,12 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
                             if (todoOtherDay.size() > 0)
                                 aday.setVisibility(View.VISIBLE);
                             adapter2.notifyDataSetChanged();
-                        }if (c.getTimeInMillis() - deadline > 0){
+                        }if (c.getTimeInMillis() - deadline > 0) {
                             Log.d(TAG, "onEvent: terlewat");
-                            db.document("Todo/"+ docu).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(getActivity(), "Todo sudah lewat", Toast.LENGTH_LONG).show();
-                                }
-                            });
+                            todoEx.add(todoLayout);
+                            if (todoEx.size() > 0)
+                                tvEx.setVisibility(View.VISIBLE);
+                            adapter3.notifyDataSetChanged();
                         }
                     }
                 }
@@ -159,6 +160,7 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
         TodoRecyclerAdapter.ViewHolder a = (TodoRecyclerAdapter.ViewHolder) viewHolder;
         int s = a.id;
         if (viewHolder instanceof TodoRecyclerAdapter.ViewHolder) {
+
             if (s == 1){
                 String doc = todoLayoutList.get(position).getDocumentId();
                 db.document("Todo/"+ doc).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -169,8 +171,10 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
                 adapter.removeItem(viewHolder.getAdapterPosition());
                 adapter.notifyItemRemoved(position);
                 adapter.notifyDataSetChanged();
+                if (todoLayoutList.size() <= 0)
+                    today.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: today hapus");
+
             }
             if (s == 2){
                 String doc = todoTomorrow.get(position).getDocumentId();
@@ -182,8 +186,10 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
                 adapter1.removeItem(viewHolder.getAdapterPosition());
                 adapter1.notifyItemRemoved(position);
                 adapter1.notifyDataSetChanged();
+                if (todoTomorrow.size() <= 0)
+                    tomorrow.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: tomorrow hapus");
+
             }if (s == 3){
                 String doc = todoOtherDay.get(position).getDocumentId();
                 db.document("Todo/"+ doc).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -194,8 +200,23 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
                 adapter2.removeItem(viewHolder.getAdapterPosition());
                 adapter2.notifyItemRemoved(position);
                 adapter2.notifyDataSetChanged();
+                if (todoOtherDay.size() <= 0)
+                    aday.setVisibility(View.GONE);
                 initData();
-                Log.d(TAG, "onSwiped: other day hapus");
+
+            }if (s == 0){
+                String doc = todoEx.get(position).getDocumentId();
+                db.document("Todo/"+ doc).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                    }
+                });
+                adapter3.removeItem(viewHolder.getAdapterPosition());
+                adapter3.notifyItemRemoved(position);
+                adapter3.notifyDataSetChanged();
+                if (todoEx.size() <= 0)
+                    tvEx.setVisibility(View.GONE);
+                initData();
             }
         }
     }
@@ -204,10 +225,14 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
         rcv_today = v.findViewById(R.id.todo_rcv_today);
         rcv_tomorrow = v.findViewById(R.id.todo_rcv_tomorrow);
         rcv_other = v.findViewById(R.id.todo_rcv_other);
+        rcv_ex = v.findViewById(R.id.todo_rcv_ex);
+
         fabAddTodo = v.findViewById(R.id.fab_todo_add);
+
         today = v.findViewById(R.id.todo_tv_today);
         tomorrow = v.findViewById(R.id.todo_tv_tomorrow);
         aday = v.findViewById(R.id.todo_tv_other_day);
+        tvEx = v.findViewById(R.id.todo_tv_ex);
 
         rcv_today.setHasFixedSize(true);
         rcv_today.setLayoutManager(new LinearLayoutManager(container.getContext()));
@@ -241,6 +266,17 @@ public class TodoFragment extends Fragment implements RecyclerItemTouchHelper.Re
 
         ItemTouchHelper.SimpleCallback itemOtherDay = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this );
         new ItemTouchHelper(itemOtherDay).attachToRecyclerView(rcv_other);
+
+        rcv_ex.setHasFixedSize(true);
+        rcv_ex.setLayoutManager(new LinearLayoutManager(container.getContext()));
+        rcv_ex.setItemAnimator(new DefaultItemAnimator());
+        rcv_ex.addItemDecoration(new DividerItemDecoration(container.getContext(), DividerItemDecoration.VERTICAL));
+
+        adapter3 = new TodoRecyclerAdapter(todoEx, container.getContext(), 0);
+        rcv_ex.setAdapter(adapter3);
+
+        ItemTouchHelper.SimpleCallback itemEx = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        new ItemTouchHelper(itemEx).attachToRecyclerView(rcv_ex);
     }
 
 }
