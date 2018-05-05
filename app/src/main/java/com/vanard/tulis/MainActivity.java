@@ -2,6 +2,7 @@ package com.vanard.tulis;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewPager;
@@ -111,23 +112,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void changeTabs(int position) {
-        if (position == 0){
-            mCategoryLabel.setTextColor(getColor(R.color.whiteGrey));
-            mCategoryLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
-            mCategoryLabel.setTextSize(18);
+        if (Build.VERSION.SDK_INT >= 23){
+            if (position == 0){
+                mCategoryLabel.setTextColor(getColor(R.color.whiteGrey));
+                mCategoryLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
+                mCategoryLabel.setTextSize(18);
 
-            mTodoLabel.setTextColor(getColor(R.color.holo_blue_dark));
-            mTodoLabel.setBackgroundColor(getColor(R.color.whiteGrey));
-            mTodoLabel.setTextSize(16);
-        }
-        if (position == 1){
-            mTodoLabel.setTextColor(getColor(R.color.whiteGrey));
-            mTodoLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
-            mTodoLabel.setTextSize(18);
+                mTodoLabel.setTextColor(getColor(R.color.holo_blue_dark));
+                mTodoLabel.setBackgroundColor(getColor(R.color.whiteGrey));
+                mTodoLabel.setTextSize(16);
+            }
+            if (position == 1){
+                mTodoLabel.setTextColor(getColor(R.color.whiteGrey));
+                mTodoLabel.setBackgroundColor(getColor(R.color.holo_blue_bright));
+                mTodoLabel.setTextSize(18);
 
-            mCategoryLabel.setTextColor(getColor(R.color.holo_blue_dark));
-            mCategoryLabel.setBackgroundColor(getColor(R.color.whiteGrey));
-            mCategoryLabel.setTextSize(16);
+                mCategoryLabel.setTextColor(getColor(R.color.holo_blue_dark));
+                mCategoryLabel.setBackgroundColor(getColor(R.color.whiteGrey));
+                mCategoryLabel.setTextSize(16);
+            }
+        }if (Build.VERSION.SDK_INT < 23){
+            if (position == 0){
+                mCategoryLabel.setTextColor(getResources().getColor(R.color.whiteGrey));
+                mCategoryLabel.setBackgroundColor(getResources().getColor(R.color.holo_blue_bright));
+                mCategoryLabel.setTextSize(18);
+
+                mTodoLabel.setTextColor(getResources().getColor(R.color.holo_blue_dark));
+                mTodoLabel.setBackgroundColor(getResources().getColor(R.color.whiteGrey));
+                mTodoLabel.setTextSize(16);
+            }
+            if (position == 1){
+                mTodoLabel.setTextColor(getResources().getColor(R.color.whiteGrey));
+                mTodoLabel.setBackgroundColor(getResources().getColor(R.color.holo_blue_bright));
+                mTodoLabel.setTextSize(18);
+
+                mCategoryLabel.setTextColor(getResources().getColor(R.color.holo_blue_dark));
+                mCategoryLabel.setBackgroundColor(getResources().getColor(R.color.whiteGrey));
+                mCategoryLabel.setTextSize(16);
+            }
         }
     }
 
